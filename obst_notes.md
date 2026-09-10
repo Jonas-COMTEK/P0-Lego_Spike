@@ -1,6 +1,7 @@
 Skrevet af Jonas Melgaard d. 9/9
 Hver opstacle-funktion starter ved en sort streg. Her stopper "move" - funktionen. 
-
+ahahah
+test
 
 obstacle_1: brudt_linje | Julius
 
