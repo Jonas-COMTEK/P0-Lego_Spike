@@ -49,6 +49,6 @@ def move_straight():
 
 
 async def main():
-    await esben.follow_ai()
+    await esben.follow()
 
 runloop.run(main())
