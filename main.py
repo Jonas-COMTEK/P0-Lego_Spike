@@ -36,7 +36,6 @@ class Esben:
     async def move(self, distance, steering=0):
         await motor_pair.move_for_degrees(motor_pair.PAIR_1, int((360 * distance) / (5.5 * math.pi)), steering)
 
-    # TODO: Fix Simons lort øv bøv høv
     async def turn(self, degrees):
         def _turn(degrees):
             degrees *= -1
@@ -67,6 +66,11 @@ class Esben:
 
         motion_sensor.reset_yaw(0)
         await runloop.until(_move_to_distance)
+        motor_pair.stop(motor_pair.PAIR_1)
+
+    async def find(self, max_distance, velocity=50):
+        motor_pair.move(motor_pair.PAIR_1, -100, velocity=velocity)
+        await runloop.until(lambda: distance_sensor.distance(self.distance_sensor)<= max_distance)
         motor_pair.stop(motor_pair.PAIR_1)
 
 esben = Esben(port.F, port.B, port.D, port.E, port.A, port.C)
