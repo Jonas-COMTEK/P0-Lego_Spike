@@ -30,8 +30,6 @@ class Esben:
                 motor_pair.move_tank(motor_pair.PAIR_1, speed, speed+change)
 
             return (min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_left) <= max_reflection_sensitivity
-                and min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_right) <= max_reflection_sensitivity
-                and color_sensor.color(self.color_sensor_left) == color.BLACK
                 and color_sensor.color(self.color_sensor_right) == color.BLACK)
 
         await runloop.until(_follow)
