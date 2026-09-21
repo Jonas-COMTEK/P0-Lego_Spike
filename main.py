@@ -19,7 +19,7 @@ class Esben:
         motor_pair.pair(motor_pair.PAIR_1, self.motor_left, self.motor_right)
         motor.reset_relative_position(self.motor_lift, 0)
 
-    async def follow_line(self, speed=250, aggresive=15, min_reflection_sensitivity= 0, max_reflection_sensitivity=7):
+    async def follow_line(self, speed=250, aggresive=15, min_reflection_sensitivity= 0, max_reflection_sensitivity=7, distance_to=False):
         def _follow():
             median_light = 17
             measure = color_sensor.reflection(self.color_sensor_left)
@@ -29,14 +29,17 @@ class Esben:
             elif change <0:
                 motor_pair.move_tank(motor_pair.PAIR_1, speed, speed+change)
 
-            return (min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_left) <= max_reflection_sensitivity
+            if distance_to == False:
+                return (min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_left) <= max_reflection_sensitivity
                 and color_sensor.color(self.color_sensor_right) == color.BLACK)
+            else:
+                distance_sensor.distance(esben.distance_sensor) <= distance_to
 
         await runloop.until(_follow)
         motor_pair.stop(motor_pair.PAIR_1)
 
     async def move(self, distance, steering=0):
-        await motor_pair.move_for_degrees(motor_pair.PAIR_1, int((360 * distance) / (5.5 * math.pi)), steering)
+        await motor_pair.move_for_degrees(motor_pair.PAIR_1, int((360 * distance) / (55 * math.pi)), steering)
 
     async def turn(self, degrees):
         def _turn(degrees):
