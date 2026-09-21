@@ -57,10 +57,10 @@ class Esben:
         await runloop.until(lambda: _turn(degrees))
         motor_pair.stop(motor_pair.PAIR_1)
 
-    async def lift_up(self, speed=100, position=300):
+    async def lift_up(self, speed=500, position=300):
         await motor.run_to_relative_position(self.motor_lift, position, speed)
 
-    async def lift_down(self, speed=100):
+    async def lift_down(self, speed=500):
         await motor.run_to_relative_position(self.motor_lift, 0, speed)
 
     async def move_to_distance(self, min_distance, speed=100):
