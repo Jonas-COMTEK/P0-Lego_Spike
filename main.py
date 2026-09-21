@@ -19,14 +19,18 @@ class Esben:
         motor_pair.pair(motor_pair.PAIR_1, self.motor_left, self.motor_right)
         motor.reset_relative_position(self.motor_lift, 0)
 
-    async def follow_line(self, speed=15, reflection_sensitivity=7):
+    async def follow_line(self, speed=250, aggresive=15, min_reflection_sensitivity= 0, max_reflection_sensitivity=7):
         def _follow():
-            motor_pair.move_tank(motor_pair.PAIR_1,
-                color_sensor.reflection(self.color_sensor_left) * speed,
-                color_sensor.reflection(self.color_sensor_right) * speed)
+            median_light = 17
+            measure = color_sensor.reflection(self.color_sensor_left)
+            change = (median_light - measure)*int(speed/aggresive)
+            if change > 0:
+                motor_pair.move_tank(motor_pair.PAIR_1, speed-change, speed)
+            elif change <0:
+                motor_pair.move_tank(motor_pair.PAIR_1, speed, speed+change)
 
-            return (color_sensor.reflection(self.color_sensor_left) < reflection_sensitivity
-                and color_sensor.reflection(self.color_sensor_right) < reflection_sensitivity
+            return (min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_left) <= max_reflection_sensitivity
+                and min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_right) <= max_reflection_sensitivity
                 and color_sensor.color(self.color_sensor_left) == color.BLACK
                 and color_sensor.color(self.color_sensor_right) == color.BLACK)
 
