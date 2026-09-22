@@ -54,6 +54,7 @@ class Esben:
                 return True
 
         motion_sensor.reset_yaw(0)
+        await runloop.sleep_ms(10)
         await runloop.until(lambda: _turn(degrees))
         motor_pair.stop(motor_pair.PAIR_1)
 
