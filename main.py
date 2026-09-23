@@ -20,10 +20,10 @@ class Esben:
         motor_pair.pair(motor_pair.PAIR_1, self.motor_left, self.motor_right)
         motor.reset_relative_position(self.motor_lift, 0)
 
-    async def follow_line(self, speed=250, aggresive=15, min_reflection_sensitivity= 0, max_reflection_sensitivity=7, distance_to=False):
+    async def follow_line(self, speed=250, aggresive=13, min_reflection_sensitivity= 0, max_reflection_sensitivity=7, distance_to=False):
         
         def _follow():
-            median_light = 19
+            median_light = 15
             measure = color_sensor.reflection(self.color_sensor_left)
             change = (median_light - measure)*int(speed/aggresive)
             if change > 0:
