@@ -36,7 +36,6 @@ class Esben:
 
             else:
                 return distance_sensor.distance(esben.distance_sensor) <= distance_to
-            return False
 
         await runloop.until(_follow)
         motor_pair.stop(motor_pair.PAIR_1)
