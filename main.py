@@ -33,7 +33,7 @@ class Esben:
                 return (min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_left) <= max_reflection_sensitivity
                 and color_sensor.color(self.color_sensor_right) == color.BLACK)
             else:
-                distance_sensor.distance(esben.distance_sensor) <= distance_to
+                return distance_sensor.distance(esben.distance_sensor) <= distance_to
 
         await runloop.until(_follow)
         motor_pair.stop(motor_pair.PAIR_1)
