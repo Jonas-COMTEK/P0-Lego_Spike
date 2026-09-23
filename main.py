@@ -8,20 +8,22 @@ import color
 import distance_sensor
 
 class Esben:
-    def __init__(self, motor_left, motor_right, motor_lift, color_sensor_left, color_sensor_right, distance_sensor):
+    def __init__(self, motor_left, motor_right, motor_lift, color_sensor_left, force_sensor, distance_sensor):
         self.motor_left = motor_left
         self.motor_right = motor_right
         self.motor_lift = motor_lift
         self.color_sensor_left = color_sensor_left
-        self.color_sensor_right = color_sensor_right
+        self.force_sensor = force_sensor
         self.distance_sensor = distance_sensor
+
 
         motor_pair.pair(motor_pair.PAIR_1, self.motor_left, self.motor_right)
         motor.reset_relative_position(self.motor_lift, 0)
 
     async def follow_line(self, speed=250, aggresive=15, min_reflection_sensitivity= 0, max_reflection_sensitivity=7, distance_to=False):
+        
         def _follow():
-            median_light = 17
+            median_light = 19
             measure = color_sensor.reflection(self.color_sensor_left)
             change = (median_light - measure)*int(speed/aggresive)
             if change > 0:
@@ -30,10 +32,11 @@ class Esben:
                 motor_pair.move_tank(motor_pair.PAIR_1, speed, speed+change)
 
             if distance_to == False:
-                return (min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_left) <= max_reflection_sensitivity
-                and color_sensor.color(self.color_sensor_right) == color.BLACK)
+                return (min_reflection_sensitivity <= color_sensor.reflection(self.color_sensor_left) <= max_reflection_sensitivity and color_sensor.color(self.color_sensor_left) ==color.BLACK)
+
             else:
-                distance_sensor.distance(esben.distance_sensor) <= distance_to
+                return distance_sensor.distance(esben.distance_sensor) <= distance_to
+            return False
 
         await runloop.until(_follow)
         motor_pair.stop(motor_pair.PAIR_1)
@@ -42,6 +45,7 @@ class Esben:
         await motor_pair.move_for_degrees(motor_pair.PAIR_1, int((360 * distance) / (55 * math.pi)), steering)
 
     async def turn(self, degrees):
+
         def _turn(degrees):
             degrees *= -1
             if degrees < 0:
@@ -52,7 +56,6 @@ class Esben:
                 return motion_sensor.tilt_angles()[0] / 10 >= degrees
             else:
                 return True
-
         motion_sensor.reset_yaw(0)
         await runloop.sleep_ms(10)
         await runloop.until(lambda: _turn(degrees))
