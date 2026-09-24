@@ -40,18 +40,18 @@ class Esben:
         await runloop.until(_follow)
         motor_pair.stop(motor_pair.PAIR_1)
 
-    async def move(self, distance, steering=0):
-        await motor_pair.move_for_degrees(motor_pair.PAIR_1, int((360 * distance) / (55 * math.pi)), steering)
+    async def move(self, distance, steering=0, speed = 200):
+        await motor_pair.move_for_degrees(motor_pair.PAIR_1, int((360 * distance) / (55 * math.pi)), steering, velocity = speed)
 
-    async def turn(self, degrees):
+    async def turn(self, degrees, speed = 100):
 
         def _turn(degrees):
             degrees *= -1
             if degrees < 0:
-                motor_pair.move(motor_pair.PAIR_1, 100, velocity=100)
+                motor_pair.move(motor_pair.PAIR_1, 100, velocity=speed)
                 return motion_sensor.tilt_angles()[0] / 10 <= degrees
             elif degrees > 0:
-                motor_pair.move(motor_pair.PAIR_1, -100, velocity=100)
+                motor_pair.move(motor_pair.PAIR_1, -100, velocity=speed)
                 return motion_sensor.tilt_angles()[0] / 10 >= degrees
             else:
                 return True
