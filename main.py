@@ -100,9 +100,104 @@ class Esben:
         await runloop.until(_move_to_distance)
         motor_pair.stop(motor_pair.PAIR_1)
 
-    async def find(self, max_distance, velocity=50):
-        motor_pair.move(motor_pair.PAIR_1, -100, velocity=velocity)
-        await runloop.until(
-            lambda: distance_sensor.distance(self.distance_sensor) <= max_distance
-        )
-        motor_pair.stop(motor_pair.PAIR_1)
+    async def find(self):
+            def _find():
+                nonlocal yaw_to_move_to
+                nonlocal direction
+                nonlocal distance
+                nonlocal first_hit
+                motor_pair.move(motor_pair.PAIR_1, 100*direction, velocity=50)
+                yaw = motion_sensor.tilt_angles()[0]
+                distance = distance_sensor.distance(self.distance_sensor)
+
+                if distance <= max_distance and distance != -1:
+                    first_hit = yaw
+                    return True
+
+                if direction == 1:
+                    if yaw < max_yaw_minus:
+                        direction *= -1
+                    elif yaw < yaw_to_move_to:
+                        yaw_to_move_to -= 10
+                        motor_pair.stop(motor_pair.PAIR_1)
+                        time.sleep_ms(100)
+                elif direction == -1:
+                    if yaw > max_yaw_plus:
+                        direction *= -1
+                    elif yaw > yaw_to_move_to:
+                        yaw_to_move_to += 10
+                        motor_pair.stop(motor_pair.PAIR_1)
+                        time.sleep_ms(100)
+                return False
+            def _find_left ():
+                nonlocal yaw_left
+                nonlocal yaw_to_move_to
+                motor_pair.move(motor_pair.PAIR_1, -100, velocity=50)
+                yaw = motion_sensor.tilt_angles()[0]
+                distance = distance_sensor.distance(self.distance_sensor)
+                if distance == -1 or distance > 500:
+                    yaw_left = yaw
+                    motor_pair.stop(motor_pair.PAIR_1)
+                    return True
+                if yaw < yaw_to_move_to:
+                    yaw_to_move_to -= 10
+                    motor_pair.stop(motor_pair.PAIR_1)
+                    time.sleep_ms(100)
+                return False
+
+            def _find_right ():
+                nonlocal yaw_right
+                nonlocal yaw_to_move_to
+                motor_pair.move(motor_pair.PAIR_1, 100, velocity=50)
+                yaw = motion_sensor.tilt_angles()[0]
+                distance = distance_sensor.distance(self.distance_sensor)
+                if distance == -1 or distance > 500:
+                    yaw_right = yaw
+                    motor_pair.stop(motor_pair.PAIR_1)
+                    return True
+                if yaw > yaw_to_move_to:
+                    yaw_to_move_to += 10
+                    motor_pair.stop(motor_pair.PAIR_1)
+                    time.sleep_ms(100)
+                return False
+
+            yaw_to_move_to = -10
+            max_yaw_minus = -100
+            max_yaw_plus = 100
+            max_distance = 400
+            direction = -1
+            distance=2000
+            first_hit = 0
+            yaw_left = 0
+            yaw_right = 0
+            motion_sensor.reset_yaw(0)
+            print("Finding")
+            await runloop.until(_find)
+            motor_pair.stop(motor_pair.PAIR_1)
+            print(distance)
+            await self.move(distance-200)
+            max_distance = 300
+            await runloop.until(_find)
+            yaw_to_move_to = motion_sensor.tilt_angles()[0] - 10
+            await runloop.sleep_ms(10)
+            print("finding left")
+            await runloop.until(_find_left)
+            print("turning back")
+
+            yaw_to_move_to = motion_sensor.tilt_angles()[0] + 10
+            max_yaw_minus = motion_sensor.tilt_angles()[0] - 200
+            max_yaw_plus = motion_sensor.tilt_angles()[0] + 100
+            max_distance = 500
+            direction = 1
+            await runloop.until(_find)
+
+
+            yaw_to_move_to = motion_sensor.tilt_angles()[0] + 10
+            print("Finding right")
+            await runloop.until(_find_right)
+            print(yaw_right)
+            print(yaw_left)
+            await self.turn(-(yaw_left-yaw_right)/20)
+            motor_pair.stop(motor_pair.PAIR_1)
+            print(distance)
+            await self.move(distance-35)
