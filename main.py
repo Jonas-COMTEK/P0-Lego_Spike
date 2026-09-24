@@ -29,8 +29,8 @@ class Esben:
 
     async def follow_line(
         self,
-        speed=250,
-        aggresive=13,
+        speed=700,
+        aggresive=3,
         min_reflection_sensitivity=0,
         max_reflection_sensitivity=7,
         to_distance=0,
@@ -41,7 +41,7 @@ class Esben:
             measure = color_sensor.reflection(self.color_sensor)
             change = int((median_light - measure) * aggresive)
 
-            motor_pair.move(motor_pair.PAIR_1, change, velocity=speed)
+            motor_pair.move(motor_pair.PAIR_1, -change, velocity=speed)
 
             if not to_distance:
                 return (
