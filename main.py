@@ -67,7 +67,6 @@ class Esben:
     async def turn(self, degrees, speed=250):
         def _turn():
             nonlocal degrees
-            degrees *= -1
             if degrees < 0:
                 motor_pair.move(motor_pair.PAIR_1, 100, velocity=speed)
                 return motion_sensor.tilt_angles()[0] / 10 <= degrees
@@ -77,6 +76,7 @@ class Esben:
             else:
                 return True
 
+        degrees *= -1
         motion_sensor.reset_yaw(0)
         await runloop.sleep_ms(10)
         await runloop.until(_turn)
