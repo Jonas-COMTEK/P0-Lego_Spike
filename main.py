@@ -6,6 +6,7 @@ import motor_pair
 import math
 import color
 import distance_sensor
+import time
 
 
 class Esben:
