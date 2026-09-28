@@ -335,7 +335,7 @@ async def main():
         maal_skive:     (600, 17),
         om_flaske:      (500, 23), 
         mur:            (500, 10),
-        om_flaske_2:    (500, 7),
+        om_flaske_2:    (500,  7),
         landingsbane:   (250, 13)
     }
     await esben.follow()
