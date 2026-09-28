@@ -28,34 +28,28 @@ class Esben:
         self.distance_sensor = distance_sensor
 
         motor_pair.pair(motor_pair.PAIR_1, self.motor_left, self.motor_right)
+        motor.reset_relative_position(self.motor_lift, 0)
 
-    async def follow_line(self, speed=500, aggresive=16, min_reflection_sensitivity= 0, max_reflection_sensitivity=7, to_distance=0):
+    async def follow_line(self, speed=500, aggresive=16, to_distance=0):
             def _follow():
                 median_light = 15
                 measure = color_sensor.reflection(self.color_sensor)
                 change = (median_light - measure)*int(speed/aggresive)
                 if change > 0:
                     motor_pair.move_tank(motor_pair.PAIR_1, speed-change, speed)
-                elif change <0:
+                elif change < 0:
                     motor_pair.move_tank(motor_pair.PAIR_1, speed, speed+change)
 
                 if not to_distance:
-                    return (
-                        min_reflection_sensitivity
-                        <= color_sensor.reflection(self.color_sensor)
-                        <= max_reflection_sensitivity
-                        and color_sensor.color(self.color_sensor) == color.BLACK
-                    )
+                    return (color_sensor.reflection(self.color_sensor) <= 7
+                        and color_sensor.color(self.color_sensor) == color.BLACK)
                 else:
-                    return (distance_sensor.distance(self.distance_sensor) <= to_distance 
-                    and distance_sensor.distance(self.distance_sensor) != 400 
-                    and distance_sensor.distance(self.distance_sensor) != -1)
-
-
+                    return (distance_sensor.distance(self.distance_sensor) <= to_distance
+                        and distance_sensor.distance(self.distance_sensor) != -1)
+            
             await runloop.until(_follow)
             motor_pair.stop(motor_pair.PAIR_1)
 
-    
             
     async def move(self, distance, steering=0, speed=250):
         await motor_pair.move_for_degrees(
@@ -67,7 +61,6 @@ class Esben:
 
     async def turn(self, degrees, speed=250):
         def _turn():
-            nonlocal degrees
             if degrees < 0:
                 motor_pair.move(motor_pair.PAIR_1, 100, velocity=speed)
                 return motion_sensor.tilt_angles()[0] / 10 <= degrees
@@ -83,11 +76,11 @@ class Esben:
         await runloop.until(_turn)
         motor_pair.stop(motor_pair.PAIR_1)
 
-    async def lift_up(self, speed=500, position=300):
-        await motor.run_to_relative_position(self.motor_lift, position, speed)
+    async def lift_up(self):
+        await motor.run_to_relative_position(self.motor_lift, 300, 500)
 
-    async def lift_down(self, speed=500):
-        await motor.run_to_relative_position(self.motor_lift, 0, speed)
+    async def lift_down(self):
+        await motor.run_to_relative_position(self.motor_lift, 0, 500)
 
     async def move_to_distance(self, min_distance, speed=100):
         def _move_to_distance():
@@ -98,7 +91,7 @@ class Esben:
             return dist != -1 and dist <= min_distance
 
         motion_sensor.reset_yaw(0)
-        runloop.sleep_ms(20)
+        await runloop.sleep_ms(10)
         await runloop.until(_move_to_distance)
         motor_pair.stop(motor_pair.PAIR_1)
 
@@ -168,7 +161,7 @@ class Esben:
         max_yaw_plus = 100
         max_distance = 400
         direction = -1
-        distance=2000
+        distance = 2000
         first_hit = 0
         yaw_left = 0
         yaw_right = 0
@@ -209,7 +202,7 @@ async def brudt_streg():
     await esben.move(200, speed=500)
     await esben.turn(-35,250)
     await esben.follow_line(speed = 500)
-    await esben.turn(-45)
+    await esben.turn(-45,250)
     await esben.move(275, speed= 500)
     await esben.turn(35)
 
@@ -232,7 +225,7 @@ async def loeft_flaske():
     await runloop.sleep_ms(1000)
     await esben.move(200)
     await esben.lift_up()
-    #Turns around to put the bottle on maalskiven
+    #Turns around to put the bottle on the maalskive
     await esben.turn(-178)
     await esben.move(880, speed=400)
     await esben.lift_down()
@@ -246,23 +239,24 @@ async def over_vippe():
     runloop.sleep_ms(20)
     await esben.move(350, speed=800)
     '''
-    while 180-motion_sensor.tilt_angles()[2] < 45:
-        print(180-motion_sensor.tilt_angles()[2])
-        runloop.sleep_ms(50)
+    while motion_sensor.tilt_angles()[2] < 180-35:
         motor_pair.move(motor_pair.PAIR_1, motion_sensor.tilt_angles()[0], velocity=900)
         '''
+    def _over_vippe():
+        median_light = 15
+        measure = color_sensor.reflection(esben.color_sensor)
+        change = int((median_light - measure) * aggresive)
+        if change > 0:
+                motor_pair.move_tank(motor_pair.PAIR_1, speed-change, speed)
+        elif change < 0:
+            motor_pair.move_tank(motor_pair.PAIR_1, speed, speed+change)
+
+        return motion_sensor.tilt_angles()[2] == 0
+
     for i in range(2):
         speed = 500
         aggresive = 6
-        while motion_sensor.tilt_angles()[2] != 0:
-            median_light = 15
-            measure = color_sensor.reflection(esben.color_sensor)
-            change = int((median_light - measure) * aggresive)
-            if change > 0:
-                    motor_pair.move_tank(motor_pair.PAIR_1, speed-change, speed)
-            elif change < 0:
-                motor_pair.move_tank(motor_pair.PAIR_1, speed, speed+change)
-
+        await runloop.until(_over_vippe)
         await esben.move(20, speed = 500)
 
 async def vippe():
@@ -273,7 +267,7 @@ async def vippe():
         await esben.move(425, speed=350)
         await esben.turn(80)
         await esben.follow_line(speed=800, aggresive=20)
-        await esben.move(10)
+        #await esben.move(10)
         await esben.turn(75, speed=250)
 
     await over_vippe()
@@ -282,7 +276,7 @@ async def vippe():
 
 async def parrallel():
     await esben.turn(-30)
-    await esben.move(300,speed=1100)
+    await esben.move(400,speed=800)
 
 
 async def maal_skive():
@@ -305,36 +299,49 @@ async def maal_skive():
     await esben.turn(75)
 
 async def om_flaske():
-    await esben.turn(40)
-    await esben.move(890,-10)
+    await esben.turn(-40)
+    await esben.move(720,10)
     #await esben.turn(20)
 
 async def mur():
+    def _pressed():
+        motor_pair.move(motor_pair.PAIR_1, velocity = -350)
+        return force_sensor.pressed(esben.force_sensor)
     await esben.turn(10)
     await esben.move_to_distance(150, speed = 200)
     await esben.turn(110)
-
-    while not force_sensor.pressed(esben.force_sensor):
-        motor_pair.move_tank(motor_pair.PAIR_1,-350, -350)
+    await runloop.until(_pressed)        
     await esben.move(40)
     await esben.turn(-40)
     await esben.move(535,-19)
 
+async def om_flaske_2():
+    await esben.turn(-40)
+    await esben.move(720,10)
+    #await esben.turn(20)
+
 async def landingsbane():
     await esben.turn(-13)
-    await esben.move_to_distance(1500)
+    await esben.move_to_distance(1500, speed=500)
     await esben.move(-160)
 
 async def main():
-    await esben.follow_line(speed= 250, aggresive=13)
-    await landingsbane()
-    '''
-    obsticales = [om_flaske, mur, om_flaske]
-
-    for obsticale in obsticales:
-        await esben.follow_line()
-        await obsticale()
-        '''
+    
+    obstacles = {
+        brudt_streg:    (500, 17),
+        loeft_flaske:   (750, 23),
+        vippe:          (750, 13),
+        parrallel:      (650, 15),
+        maal_skive:     (600, 17),
+        om_flaske:      (500, 23), 
+        mur:            (500, 10),
+        om_flaske_2:    (500, 7),
+        landingsbane:   (250, 13)
+    }
+    await esben.follow_line()
+    for obstacle in obstacles:
+        await obstacle()
+        await esben.follow_line(*obstacles[obstacle])
 
     
 runloop.run(main())
