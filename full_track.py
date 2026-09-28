@@ -30,11 +30,11 @@ class Esben:
         motor_pair.pair(motor_pair.PAIR_1, self.motor_left, self.motor_right)
         motor.reset_relative_position(self.motor_lift, 0)
 
-    async def follow(self, speed=500, aggresive=16, to_distance=0):
+    async def follow(self, speed=500, aggressive=16, to_distance=0):
             def _follow():
                 median_light = 15
                 measure = color_sensor.reflection(self.color_sensor)
-                change = (median_light - measure)*int(speed/aggresive)
+                change = (median_light - measure)*int(speed/aggressive)
                 if change > 0:
                     motor_pair.move_tank(motor_pair.PAIR_1, speed-change, speed)
                 elif change < 0:
@@ -233,7 +233,7 @@ async def loeft_flaske():
     await esben.turn(90)
 
 async def over_vippe():
-    await esben.follow(speed= 500, aggresive=23)
+    await esben.follow(speed= 500, aggressive=23)
     await esben.turn(-5)
     motion_sensor.reset_yaw(0)
     runloop.sleep_ms(20)
@@ -245,7 +245,7 @@ async def over_vippe():
     def _over_vippe():
         median_light = 15
         measure = color_sensor.reflection(esben.color_sensor)
-        change = int((median_light - measure) * aggresive)
+        change = int((median_light - measure) * aggressive)
         if change > 0:
                 motor_pair.move_tank(motor_pair.PAIR_1, speed-change, speed)
         elif change < 0:
@@ -255,7 +255,7 @@ async def over_vippe():
 
     for i in range(2):
         speed = 500
-        aggresive = 6
+        aggressive = 6
         await runloop.until(_over_vippe)
         await esben.move(20, speed = 500)
 
@@ -266,7 +266,7 @@ async def vippe():
         await over_vippe()
         await esben.move(425, speed=350)
         await esben.turn(80)
-        await esben.follow(speed=800, aggresive=20)
+        await esben.follow(speed=800, aggressive=20)
         #await esben.move(10)
         await esben.turn(75, speed=250)
 
