@@ -30,7 +30,7 @@ class Esben:
         motor_pair.pair(motor_pair.PAIR_1, self.motor_left, self.motor_right)
         motor.reset_relative_position(self.motor_lift, 0)
 
-    async def follow_line(self, speed=500, aggresive=16, to_distance=0):
+    async def follow(self, speed=500, aggresive=16, to_distance=0):
             def _follow():
                 median_light = 15
                 measure = color_sensor.reflection(self.color_sensor)
@@ -201,7 +201,7 @@ async def brudt_streg():
     await esben.turn(45,250)
     await esben.move(200, speed=500)
     await esben.turn(-35,250)
-    await esben.follow_line(speed = 500)
+    await esben.follow(speed = 500)
     await esben.turn(-45,250)
     await esben.move(275, speed= 500)
     await esben.turn(35)
@@ -213,7 +213,7 @@ async def loeft_flaske():
     await esben.move(230, speed=400)
     await esben.turn(85, speed=100)
     #Follow lines until it reads something closer than 10 cm.
-    await esben.follow_line(300, to_distance=100)
+    await esben.follow(300, to_distance=100)
     #Moves 1 cm. from the bottle
     await esben.move(distance_sensor.distance(esben.distance_sensor)-10)
     #Lifts bottle and moves
@@ -233,7 +233,7 @@ async def loeft_flaske():
     await esben.turn(90)
 
 async def over_vippe():
-    await esben.follow_line(speed= 500, aggresive=23)
+    await esben.follow(speed= 500, aggresive=23)
     await esben.turn(-5)
     motion_sensor.reset_yaw(0)
     runloop.sleep_ms(20)
@@ -266,7 +266,7 @@ async def vippe():
         await over_vippe()
         await esben.move(425, speed=350)
         await esben.turn(80)
-        await esben.follow_line(speed=800, aggresive=20)
+        await esben.follow(speed=800, aggresive=20)
         #await esben.move(10)
         await esben.turn(75, speed=250)
 
@@ -282,7 +282,7 @@ async def parrallel():
 async def maal_skive():
     await esben.move(230, speed=400)
     await esben.turn(-90)
-    await esben.follow_line(speed=300)
+    await esben.follow(speed=300)
     #Drives to the middle
     await esben.move(620,speed=300)
     #Turns to the direction-ish of the bottle
@@ -338,10 +338,10 @@ async def main():
         om_flaske_2:    (500, 7),
         landingsbane:   (250, 13)
     }
-    await esben.follow_line()
+    await esben.follow()
     for obstacle in obstacles:
         await obstacle()
-        await esben.follow_line(*obstacles[obstacle])
+        await esben.follow(*obstacles[obstacle])
 
     
 runloop.run(main())
