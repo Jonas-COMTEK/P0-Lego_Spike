@@ -52,7 +52,7 @@ class Esben:
                     and color_sensor.color(self.color_sensor) == color.BLACK
                 )
             else:
-                return distance_sensor.distance(self.distance_sensor) <= to_distance
+                return distance_sensor.distance(self.distance_sensor) <= to_distance and distance_sensor.distance(self.distance_sensor) != -1
 
         await runloop.until(_follow)
         motor_pair.stop(motor_pair.PAIR_1)
