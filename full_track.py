@@ -273,8 +273,8 @@ async def vippe():
     await esben.turn(-85)
 
 async def parrallel():
-    await esben.turn(-30)
-    await esben.move(270,speed=400)
+    await esben.turn(-20)
+    await esben.move(380,speed=200)
 
 
 async def maal_skive():
@@ -284,7 +284,7 @@ async def maal_skive():
     #Drives to the middle
     await esben.move(620,speed=300)
     #Turns to the direction-ish of the bottle
-    await esben.turn(-30,speed=150)
+    await esben.turn(-33,speed=150)
     #Finds the bottle and
     await esben.find()
     await esben.lift_up()
