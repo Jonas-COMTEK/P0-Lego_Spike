@@ -100,14 +100,14 @@ class Esben:
             nonlocal yaw_to_move_to
             nonlocal direction
             nonlocal distance
-            nonlocal first_hit
             motor_pair.move(motor_pair.PAIR_1, 100*direction, velocity=50)
             yaw = motion_sensor.tilt_angles()[0]
             distance = distance_sensor.distance(self.distance_sensor)
 
             if distance <= max_distance and distance != -1:
-                first_hit = yaw
+                motor_pair.stop(motor_pair.PAIR_1)
                 return True
+            
             if direction == 1:
                 if yaw < max_yaw_minus:
                     direction *= -1
@@ -156,21 +156,19 @@ class Esben:
                 time.sleep_ms(100)
             return False
 
-        yaw_to_move_to = -10
+        yaw_to_move_to = 10
         max_yaw_minus = -100
         max_yaw_plus = 100
         max_distance = 400
         direction = -1
         distance = 2000
-        first_hit = 0
         yaw_left = 0
         yaw_right = 0
         motion_sensor.reset_yaw(0)
         print("Finding")
         await runloop.until(_find)
-        motor_pair.stop(motor_pair.PAIR_1)
         print(distance)
-        await self.move(distance-250)
+        await self.move(distance-220)
         max_distance = 300
         await runloop.until(_find)
         yaw_to_move_to = motion_sensor.tilt_angles()[0] - 10
@@ -178,31 +176,31 @@ class Esben:
         print("finding left")
         await runloop.until(_find_left)
         print("turning back")
-        yaw_to_move_to = motion_sensor.tilt_angles()[0] + 10
-        max_yaw_minus = motion_sensor.tilt_angles()[0] - 200
-        max_yaw_plus = motion_sensor.tilt_angles()[0] + 100
+        yaw_to_move_to = motion_sensor.tilt_angles()[0] - 120
+        max_yaw_minus = motion_sensor.tilt_angles()[0] - 250
+        max_yaw_plus = motion_sensor.tilt_angles()[0] - 120
         max_distance = 500
         direction = 1
         await runloop.until(_find)
 
-        yaw_to_move_to = motion_sensor.tilt_angles()[0] + 10
+        yaw_to_move_to = motion_sensor.tilt_angles()[0] - 10
         print("Finding right")
         await runloop.until(_find_right)
         print(yaw_right)
         print(yaw_left)
-        await self.turn(-(yaw_left-yaw_right)/20,speed=150)
+        await self.turn(-(yaw_left-yaw_right)/20,speed=100)
         motor_pair.stop(motor_pair.PAIR_1)
         print(distance)
-        await self.move(distance-35)
+        await self.move(distance-35,speed=100)
 
 esben = Esben(port.F, port.B, port.D, port.E, port.A, port.C)
 
 async def brudt_streg():
-    await esben.turn(45,250)
-    await esben.move(200, speed=500)
-    await esben.turn(-35,250)
-    await esben.follow(speed = 500)
-    await esben.turn(-45,250)
+    await esben.turn(45,150)
+    await esben.move(250, speed=500)
+    await esben.turn(-35,150)
+    await esben.follow(speed = 500, aggressive=17)
+    await esben.turn(-45,150)
     await esben.move(275, speed= 500)
     await esben.turn(35)
 
@@ -213,9 +211,9 @@ async def loeft_flaske():
     await esben.move(230, speed=400)
     await esben.turn(85, speed=100)
     #Follow lines until it reads something closer than 10 cm.
-    await esben.follow(300, to_distance=100)
+    await esben.follow(200, aggressive=30, to_distance=80)
     #Moves 1 cm. from the bottle
-    await esben.move(distance_sensor.distance(esben.distance_sensor)-10)
+    await esben.move(distance_sensor.distance(esben.distance_sensor)-10,speed=100)
     #Lifts bottle and moves
     await esben.lift_up()
     await esben.move(200)
@@ -229,15 +227,15 @@ async def loeft_flaske():
     await esben.turn(-178)
     await esben.move(880, speed=400)
     await esben.lift_down()
-    await esben.move(-370, speed=400)
-    await esben.turn(90)
+    await esben.move(-420, speed=400)
+    await esben.turn(75)
 
 async def over_vippe():
     await esben.follow(speed= 500, aggressive=23)
     await esben.turn(-3)
     motion_sensor.reset_yaw(0)
     await runloop.sleep_ms(20)
-    await esben.move(350, speed=800)
+    await esben.move(350, steering=-5 , speed=800)
     '''
     while motion_sensor.tilt_angles()[2] < 180-35:
         motor_pair.move(motor_pair.PAIR_1, motion_sensor.tilt_angles()[0], velocity=900)
@@ -255,7 +253,7 @@ async def over_vippe():
 
     for i in range(2):
         speed = 500
-        aggressive = 6
+        aggressive = 10
         await runloop.until(_over_vippe)
         await esben.move(20, speed = 500)
 
@@ -276,7 +274,7 @@ async def vippe():
 
 async def parrallel():
     await esben.turn(-30)
-    await esben.move(400,speed=800)
+    await esben.move(270,speed=400)
 
 
 async def maal_skive():
@@ -318,12 +316,17 @@ async def mur():
 
 async def om_flaske_2():
     await esben.turn(40)
-    await esben.move(720,10)
+    await esben.move(850,-10)
     #await esben.turn(-20)
 
 async def landingsbane():
+    def _landingsbane():
+        motor_pair.move(motor_pair.PAIR_1, -100, velocity=100)
+        return  -1400 > motion_sensor.tilt_angles()[0] >= -1800
+    
+    await runloop.until(_landingsbane)
     #await esben.turn(-13)
-    await esben.move_to_distance(1500, speed=500)
+    await esben.move_to_distance(1350, speed=500)
     await esben.move(-160)
 
 async def main():
@@ -332,15 +335,15 @@ async def main():
         brudt_streg:    (500, 17),
         loeft_flaske:(500, 17),
         vippe:        (500, 15),
-        parrallel:    (500, 17),
-        maal_skive:    (500, 17),
+        parrallel:    (400, 10),
+        maal_skive:    (400, 17),
         om_flaske:    (500, 17),
-        mur:            (500, 17),
-        om_flaske_2:    (400,17),
-        landingsbane:(250, 13)
+        mur:            (500, 16),
+        om_flaske_2:    (400,10),
+        landingsbane:(0, 10)
     }
-    obstacle_list = [brudt_streg,loeft_flaske,vippe,parrallel,maal_skive,om_flaske,mur,om_flaske_2,landingsbane]
-    
+    obstacle_list = [brudt_streg, loeft_flaske, vippe, parrallel, maal_skive, om_flaske, mur,om_flaske_2,landingsbane]
+
     await esben.follow()
     for obstacle in obstacle_list:
         await obstacle()
