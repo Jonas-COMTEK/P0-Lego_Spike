@@ -1,4 +1,4 @@
-from hub import port, motion_sensor
+from hub import port, motion_sensor,sound
 import motor
 import runloop
 import color_sensor
@@ -269,7 +269,7 @@ async def vippe():
         await esben.turn(75, speed=250)
 
     await over_vippe()
-    await esben.move(400, speed=350)
+    await esben.move(380, speed=200)
     await esben.turn(-85)
 
 async def parrallel():
@@ -342,7 +342,7 @@ async def main():
         om_flaske_2:    (400,10),
         landingsbane:(0, 10)
     }
-    obstacle_list = [brudt_streg, loeft_flaske, vippe, parrallel, maal_skive, om_flaske, mur,om_flaske_2,landingsbane]
+    obstacle_list = [vippe, parrallel, maal_skive, om_flaske, mur,om_flaske_2,landingsbane]
 
     await esben.follow()
     for obstacle in obstacle_list:
