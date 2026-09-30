@@ -56,7 +56,7 @@ class Anna:
                 color_sensor.reflection(self.color_sensor_right) * speed)
 
             return (color_sensor.reflection(self.color_sensor_left) < 10
-                and color_sensor.reflection(self.color_sensor_right) < 10)
+                or color_sensor.reflection(self.color_sensor_right) < 10)
         
         await runloop.until(_follow_2)
 
@@ -207,48 +207,54 @@ class Anna:
 anna = Anna(port.B, port.F, port.E, port.A, port.C, port.D)
 
 async def brudt_streg():
-    await anna.turn(45,150)
+    await anna.turn(45)
     await anna.move(250, speed=500)
-    await anna.turn(-35,150)
-    await anna.follow_2()
-    await anna.turn(-45,150)
+    await anna.turn(-35)
+    await anna.follow_2(40)
+    await anna.turn(-45)
     await anna.move(275, speed= 500)
     await anna.turn(35)
 
 async def parrallel():
-    await anna.turn(-20,speed=100)
-    await anna.move(500,speed=500)
-    await anna.turn(20,speed=100)
+    await anna.turn(-20)
+    await anna.move(500,speed=1100)
+    await anna.turn(20)
 
 async def short_cut():
     await runloop.sleep_ms(50)
     await anna.follow_2(40)
-    await anna.move(240, speed=1000)
-    await anna.turn(-85, speed=250)
+    await anna.move(240, speed=1100)
+    await anna.turn(-85)
     await anna.follow_2(30)
-    await anna.move(100, speed=1000)
-    await anna.turn(85, speed=250)
-    await anna.move(750, speed=1000)
-    await anna.turn(-85, speed=250)
+    await anna.move(100, speed=1100)
+    await anna.turn(85)
+    await anna.move(750, speed=1100)
+    await anna.turn(-75)
 
 async def short_cut_2():
     def _short_cut_2():
-        return color_sensor.reflection(anna.color_sensor_left) < 20 and color_sensor.reflection(anna.color_sensor_right) < 20
+        return color_sensor.reflection(anna.color_sensor_left) < 20 or color_sensor.reflection(anna.color_sensor_right) < 20
     await runloop.sleep_ms(50)
     await anna.follow_2(40)
-    await anna.turn(80,speed=100)
-    motor_pair.move(motor_pair.PAIR_1,steering=0,velocity=500)
+    await anna.turn(65)
+    motor_pair.move(motor_pair.PAIR_1,0,velocity=1100)
     await runloop.until(_short_cut_2)
     motor_pair.stop(motor_pair.PAIR_1)
+    await runloop.sleep_ms(10)
+    await anna.move(150,speed=1100)
+    await anna.turn(-70)
+    await anna.move(300,speed=1100)
+    await anna.turn(80, speed=500)
+    await anna.move(950,speed=1100)
 
 async def main():
 
     obstacles = {
         brudt_streg:   40 ,
         short_cut:      40,
-        parrallel:    40,
+        parrallel:    35,
     }
-    obstacle_list = [parrallel,short_cut_2]
+    obstacle_list = [brudt_streg, short_cut, parrallel,short_cut_2]
 
     await anna.follow_2(40)
     for obstacle in obstacle_list:
