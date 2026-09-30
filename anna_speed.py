@@ -253,6 +253,7 @@ async def main():
         brudt_streg:   40 ,
         short_cut:      40,
         parrallel:    35,
+        short_cut_2: 0,
     }
     obstacle_list = [brudt_streg, short_cut, parrallel,short_cut_2]
 
