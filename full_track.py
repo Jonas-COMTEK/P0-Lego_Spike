@@ -212,6 +212,7 @@ async def loeft_flaske():
     await esben.turn(85, speed=100)
     #Follow lines until it reads something closer than 10 cm.
     await esben.follow(200, aggressive=30, to_distance=80)
+    print("stops follow - Moves distance")
     #Moves 1 cm. from the bottle
     await esben.move(distance_sensor.distance(esben.distance_sensor)-10,speed=100)
     #Lifts bottle and moves
